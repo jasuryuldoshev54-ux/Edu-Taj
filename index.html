@@ -1,1 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduTaj — Электронная школьная система (МТМУ/8 — Гулистон)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
 
+    <!-- ЭКРАН 1: ПРИВЕТСТВИЕ / ЦИТАТА / ВХОД -->
+    <section id="screen-auth" class="screen active">
+      <div class="auth-wave-top"></div>
+
+      <div class="auth-header">
+        <div class="logo-emblem">
+          <img src="logo.png" alt="EduTaj" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="logo-svg-fallback" style="display:none;">
+            <svg viewBox="0 0 120 120" width="96" height="96">
+              <circle cx="60" cy="60" r="56" fill="#fff" stroke="#c89d3c" stroke-width="3"/>
+              <circle cx="60" cy="60" r="51" fill="none" stroke="#1e40af" stroke-width="2"/>
+              <polygon points="60,20 92,34 60,48 28,34" fill="#d4af37"/>
+              <path d="M34,52 Q60,62 60,62 Q60,62 86,52 L86,80 Q60,90 60,90 Q60,90 34,80 Z" fill="#1d4ed8"/>
+              <line x1="60" y1="62" x2="60" y2="90" stroke="#fff" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="brand-title">Edu<span>Taj</span></div>
+          <div class="brand-sub">МТМУ/8 – Гулистон</div>
+          <div class="brand-motto">Знания • Развитие • Будущее</div>
+        </div>
+
+        <blockquote class="tajik-quote">
+          «Ҳамаи пешравию пирӯзии ҳар давлат ва ҷомеаро мактабу маориф ва илму дониш таъмин мекунад.»
+          <span>Пешвои миллат Эмомалӣ Раҳмон.</span>
+        </blockquote>
+      </div>
+
+      <!-- Форма входа -->
+      <div id="login-box" class="auth-card">
+        <h2>Добро пожаловать!</h2>
+        <p class="muted">Войдите в свой аккаунт</p>
+
+        <div class="input-group">
+          <span class="icon">📱</span>
+          <input type="text" id="login-phone" placeholder="Номер телефона" value="+992 93 123 45 67" />
+        </div>
+        <div class="input-group">
+          <span class="icon">🔒</span>
+          <input type="password" id="login-pass" placeholder="Пароль" value="123" />
+        </div>
+
+        <button class="btn-primary" onclick="handleLogin()">Войти</button>
+
+        <div class="quick-demo">
+          <span>Быстрый вход:</span>
+          <button type="button" onclick="quickLogin('Ученик')">Ученик</button>
+          <button type="button" onclick="quickLogin('Учитель')">Учитель</button>
+          <button type="button" onclick="quickLogin('Директор')">Директор</button>
+        </div>
+
+        <div class="divider"><span>или</span></div>
+        <button class="btn-outline" onclick="toggleAuthMode('register')">Создать аккаунт</button>
+      </div>
+
+      <!-- Форма регистрации -->
+      <div id="register-box" class="auth-card" style="display:none;">
+        <div class="reg-top">
+          <button class="back-btn" onclick="toggleAuthMode('login')">‹</button>
+          <div>
+            <h2>Регистрация</h2>
+            <p class="muted">Заполните данные для создания аккаунта</p>
+          </div>
+          <div class="tj-flag" title="Таджикистан">
+            <div class="f-red"></div>
+            <div class="f-white">👑</div>
+            <div class="f-green"></div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <span class="icon">👤</span>
+          <input type="text" id="reg-fio" placeholder="ФИО" />
+        </div>
+        <div class="input-group">
+          <span class="icon">📞</span>
+          <input type="text" id="reg-phone" placeholder="Номер телефона" />
+        </div>
+        <div class="input-group">
+          <span class="icon">🔒</span>
+          <input type="password" id="reg-pass" placeholder="Пароль" />
+        </div>
+
+        <label class="role-label">Кто вы? Выберите свою роль:</label>
+        <div class="roles-grid" id="roles-grid"></div>
+
+        <div id="role-hint" class="role-hint">
+          Ученик и родитель получают доступ сразу; остальные роли — после одобрения администрацией.
+        </div>
+
+        <button class="btn-primary" onclick="handleRegister()">Зарегистрироваться</button>
+        <p class="switch-link">Уже есть аккаунт? <a href="#" onclick="toggleAuthMode('login')">Войти</a></p>
+      </div>
+    </section>
+
+    <!-- ЭКРАН 2: ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+    <section id="screen-main" class="screen">
+      <!-- Верхняя шапка -->
+      <header class="topbar">
+        <button class="icon-btn" onclick="toggleDrawer(true)">☰</button>
+        <div class="topbar-brand" onclick="navigate('home')">
+          <span class="mini-badge">🎓</span>
+          <span>EduTaj</span>
+        </div>
+        <button class="icon-btn notif-btn" onclick="navigate('notifications')">
+          🔔<span class="badge-dot" id="notif-count">3</span>
+        </button>
+      </header>
+
+      <!-- Боковое меню (Drawer) -->
+      <div id="drawer-overlay" class="drawer-overlay" onclick="toggleDrawer(false)"></div>
+      <aside id="drawer" class="drawer">
+        <div class="drawer-head">
+          <div class="drawer-logo">
+            <div class="brand-title">Edu<span>Taj</span></div>
+            <div class="brand-sub">МТМУ/8 – Гулистон</div>
+          </div>
+          <button class="close-drawer" onclick="toggleDrawer(false)">✕</button>
+        </div>
+        <nav class="drawer-nav">
+          <button onclick="navigate('home')">🏠 Главная</button>
+          <button onclick="navigate('profile')">👤 Мой профиль</button>
+          <button onclick="navigate('journal')">📘 Мой журнал</button>
+          <button onclick="navigate('schedule')">📅 Расписание</button>
+          <button onclick="navigate('homework')">📝 Домашние задания</button>
+          <button onclick="navigate('discipline')">⚠️ Поведение и дисциплина</button>
+          <button onclick="navigate('notifications')">🔔 Уведомления <span class="pill-red">3</span></button>
+          <button onclick="navigate('library')">📚 Библиотека и Архив</button>
+          <button onclick="navigate('users')">👥 Управление пользователями</button>
+        </nav>
+        <button class="logout-btn" onclick="logout()">🚪 Выйти</button>
+      </aside>
+
+      <!-- Контейнер страниц -->
+      <main class="content">
+
+        <!-- СТРАНИЦА: ГЛАВНАЯ -->
+        <div id="page-home" class="page active">
+          <div class="user-banner" onclick="navigate('profile')">
+            <div class="avatar">👨‍🎓</div>
+            <div class="user-meta">
+              <strong id="home-user-name">Алишер Назаров</strong>
+              <span id="home-user-role">Ученик • 8-А класс</span>
+            </div>
+            <span class="arrow">›</span>
+          </div>
+
+          <div class="school-hero">
+            <div class="school-hero-overlay">
+              <div class="school-title">Школа №8 • г. Гулистон</div>
+              <div class="school-motto">Знания • Развитие • Будущее</div>
+            </div>
+          </div>
+
+          <!-- Общая статистика -->
+          <div class="stats-grid">
+            <div class="stat-card blue" onclick="navigate('users')">
+              <span class="stat-num">480</span>
+              <span class="stat-lbl">Ученики</span>
+            </div>
+            <div class="stat-card green" onclick="navigate('users')">
+              <span class="stat-num">38</span>
+              <span class="stat-lbl">Учителя</span>
+            </div>
+            <div class="stat-card purple">
+              <span class="stat-num">12</span>
+              <span class="stat-lbl">Классы</span>
+            </div>
+            <div class="stat-card orange" onclick="navigate('journal')">
+              <span class="stat-num">95%</span>
+              <span class="stat-lbl">Посещаемость</span>
+            </div>
+          </div>
+
+          <!-- Основные разделы (6 иконок как на макете) -->
+          <div class="modules-grid">
+            <button class="mod-tile" onclick="navigate('journal')">
+              <div class="mod-icon bg-blue">📘</div>
+              <span>Мой журнал</span>
+            </button>
+            <button class="mod-tile" onclick="navigate('schedule')">
+              <div class="mod-icon bg-indigo">📅</div>
+              <span>Расписание</span>
+            </button>
+            <button class="mod-tile" onclick="navigate('homework')">
+              <div class="mod-icon bg-sky">🏠</div>
+              <span>Домашние задания</span>
+            </button>
+            <button class="mod-tile" onclick="navigate('journal', 'attendance')">
+              <div class="mod-icon bg-green">✅</div>
+              <span>Посещаемость</span>
+            </button>
+            <button class="mod-tile" onclick="navigate('discipline')">
+              <div class="mod-icon bg-amber">📋</div>
+              <span>Дисциплина</span>
+            </button>
+            <button class="mod-tile" onclick="navigate('notifications')">
+              <div class="mod-icon bg-orange">🔔<i class="mini-badge-num">3</i></div>
+              <span>Уведомления</span>
+            </button>
+          </div>
+
+          <!-- Последние новости -->
+          <div class="section-row">
+            <h3>Последние новости</h3>
+            <a href="#" onclick="navigate('notifications')">Все ›</a>
+          </div>
+          <div class="news-card">
+            <div class="news-thumb">🏫</div>
+            <div>
+              <small class="muted">1 декабря 2025</small>
+              <strong>Начало второй четверти</strong>
+              <p class="muted">Учебный процесс возобновляется согласно утверждённому расписанию.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- СТРАНИЦА: ЭЛЕКТРОННЫЙ ЖУРНАЛ -->
+        <div id="page-journal" class="page">
+          <div class="page-head">
+            <button class="back-btn" onclick="navigate('home')">‹</button>
+            <h2>Электронный журнал</h2>
+          </div>
+
+          <!-- Переключатель вкладок Оценки / Посещаемость -->
+          <div class="seg-tabs">
+            <button id="tab-btn-grades" class="active" onclick="switchJournalTab('grades')">1. Оценки</button>
+            <button id="tab-btn-att" onclick="switchJournalTab('attendance')">2. Посещаемость</button>
+          </div>
+
+          <!-- Вкладка Оценки -->
+          <div id="journal-grades-view">
+            <div class="quarters-bar">
+              <button class="q-btn active" onclick="selectQuarter(1, this)">1 четверть</button>
+              <button class="q-btn" onclick="selectQuarter(2, this)">2 четверть</button>
+              <button class="q-btn" onclick="selectQuarter(3, this)">3 четверть</button>
+              <button class="q-btn" onclick="selectQuarter(4, this)">4 четверть</button>
+            </div>
+
+            <!-- Панель учителя для выставления оценки -->
+            <div id="teacher-grade-panel" class="card-box teacher-panel" style="display:none;">
+              <h4>Выставить оценку (8-А класс)</h4>
+              <div class="form-row">
+                <select id="grade-subject-select">
+                  <option>Математика</option>
+                  <option>Физика</option>
+                  <option>Химия</option>
+                  <option>Русский язык</option>
+                  <option>Таджикский язык</option>
+                  <option>История</option>
+                </select>
+                <select id="grade-type-select">
+                  <option>Работа на уроке</option>
+                  <option>Домашняя работа</option>
+                  <option>Самостоятельная</option>
+                  <option>Контрольная</option>
+                  <option>Итоговая</option>
+                </select>
+                <select id="grade-val-select">
+                  <option value="10">10</option>
+                  <option value="9">9</option>
+                  <option value="8">8</option>
+                  <option value="7">7</option>
+                  <option value="5">5</option>
+                </select>
+                <button class="btn-primary sm" onclick="addGrade()">Добавить</button>
+              </div>
+            </div>
+
+            <div class="card-box">
+              <div class="table-header">
+                <span>Предмет</span>
+                <span>Оценки</span>
+              </div>
+              <div id="grades-list"></div>
+              <div class="avg-footer">
+                <span>📊 Средний балл:</span>
+                <strong id="avg-score">9.5</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Вкладка Посещаемость -->
+          <div id="journal-att-view" style="display:none;">
+            <div class="card-box">
+              <div class="att-top">
+                <div>
+                  <strong>8-А класс • Математика</strong>
+                  <div class="muted">Сегодня</div>
+                </div>
+                <span class="pill-green">95%</span>
+              </div>
+              <div class="att-counters">
+                <div class="att-box green">
+                  <strong id="att-present-count">24</strong>
+                  <span>Присутствуют</span>
+                </div>
+                <div class="att-box red">
+                  <strong id="att-absent-count">2</strong>
+                  <span>Отсутствуют</span>
+                </div>
+              </div>
+              <h4>Список учеников</h4>
+              <div id="attendance-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- СТРАНИЦА: ПОВЕДЕНИЕ И ДИСЦИПЛИНА -->
+        <div id="page-discipline" class="page">
+          <div class="page-head">
+            <button class="back-btn" onclick="navigate('home')">‹</button>
+            <h2>Поведение и дисциплина</h2>
+          </div>
+
+          <div class="card-box">
+            <h4>Добавить замечание</h4>
+            <p class="muted">Ученик: Алиев Фарид • 8-А класс</p>
+            <div class="cat-chips" id="disc-cats">
+              <button type="button" class="chip active" onclick="selectDiscCat(this)">Опоздание</button>
+              <button type="button" class="chip" onclick="selectDiscCat(this)">Нарушение дисциплины</button>
+              <button type="button" class="chip" onclick="selectDiscCat(this)">Не выполнил задание</button>
+              <button type="button" class="chip" onclick="selectDiscCat(this)">Другое</button>
+            </div>
+            <input type="text" id="disc-note" class="text-input" placeholder="Описание замечания..." />
+            <button class="btn-primary" onclick="addDiscipline()">Сохранить замечание</button>
+          </div>
+
+          <div class="card-box">
+            <div class="section-row">
+              <h4>История замечаний</h4>
+              <span class="pill-orange" id="disc-count">2 замечания</span>
+            </div>
+            <div id="discipline-list"></div>
+          </div>
+        </div>
+
+        <!-- СТРАНИЦА: РАСПИСАНИЕ -->
+        <div id="page-schedule" class="page">
+          <div class="page-head">
+            <button class="back-btn" onclick="navigate('home')">‹</button>
+            <h2>Расписание уроков (8-А)</h2>
+          </div>
+          <div class="days-bar" id="days-bar">
+            <button class="day-btn active" onclick="renderSchedule('Пн', this)">Пн</button>
+            <button class="day-btn" onclick="renderSchedule('Вт', this)">Вт</button>
+            <button class="day-btn" onclick="renderSchedule('Ср', this)">Ср</button>
+            <button class="day-btn" onclick="renderSchedule('Чт', this)">Чт</button>
+            <button class="day-btn" onclick="renderSchedule('Пт', this)">Пт</button>
+          </div>
+          <div id="schedule-list" class="card-box"></div>
+        </div>
+
+        <!-- СТРАНИЦА: ДОМАШНИЕ ЗАДАНИЯ -->
+        <div id="page-homework" class="page">
+          <div class="page-head">
+            <button class="back-btn" onclick="navigate('home')">‹</button>
+            <h2>Домашние задания</h2>
+          </div>
+          <div id="homework-list"></div>
+        </div>
+
+        <!-- СТРАНИЦА: УВЕДОМЛЕНИЯ -->
+        <div id="page-notifications" class="page">
+          <div class="page-head">
+            <button class="back-btn" onclick="navigate('home')">‹</button>
+            <h2>Уведомления</h2>
+          </div>
+          <div id="notifications-list" class="card-box"></div>
+        </div>
+
+        <!-- СТРАНИЦА: ПРОФИЛЬ -->
+        <div id="page-profile" class="page">
+          <div class="page-head">
+            <button class="back-btn" onclick="navigate('home')">‹</button>
+            <h2>Мой профиль</h2>
+          </div>
+          <div class="card-box profile-card">
+            <div class="profile-avatar">👨‍🎓</div>
+            <h3 id="prof-name">Алишер Назаров</h3>
+            <p class="muted" id="prof-role">Ученик • 8-А класс</p>
+
+            <div class="prof-row">
+              <span>📅 Дата рождения</span>
+              <strong id="prof-birth">15.05.2010</strong>
+            </div>
+            <div class="prof-row">
+              <span>📞 Телефон</span>
+              <strong id="prof-phone">+992 93 123 45 67</strong>
+            </div>
+            <div class="prof-row">
+              <span>🏫 Школа</span>
+              <strong>МТМУ/8 – Гулистон</strong>
+            </div>
+
+            <button class="btn-primary" onclick="alert('Редактирование профиля доступно после подтверждения классным руководителем')">
+              Редактировать профиль
+            </button>
+          </div>
+        </div>
+
+        <!-- СТРАНИЦА: БИБЛИОТЕКА И АРХИВ -->
+        <div id="page-library" class="page">
+          <div class="page-head">
+            <button class="back-btn" onclick="navigate('home')">‹</button>
+            <h2>Библиотека и Архив</h2>
+          </div>
+          <div class="card-box">
+            <h4>Учебные материалы</h4>
+            <div id="library-list"></div>
+          </div>
+          <div class="card-box">
+            <h4>Архив (2024–2025)</h4>
+            <div class="list-item"><span>📘 Журнал (2024–2025)</span><span>›</span></div>
+            <div class="list-item"><span>✅ Посещаемость (2024–2025)</span><span>›</span></div>
+            <div class="list-item"><span>📊 Отчёты (2024–2025)</span><span>›</span></div>
+          </div>
+        </div>
+
+        <!-- СТРАНИЦА: УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ (ОДОБРЕНИЕ РОЛЕЙ) -->
+        <div id="page-users" class="page">
+          <div class="page-head">
+            <button class="back-btn" onclick="navigate('home')">‹</button>
+            <h2>Управление пользователями</h2>
+          </div>
+          <div class="card-box">
+            <p class="muted">Заявки на регистрацию сотрудников и список пользователей:</p>
+            <div id="users-list"></div>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- Нижняя навигация мобильной версии -->
+      <nav class="bottom-nav">
+        <button class="bnav-btn active" data-page="home" onclick="navigate('home')">
+          <span>🏠</span><small>Главная</small>
+        </button>
+        <button class="bnav-btn" data-page="journal" onclick="navigate('journal')">
+          <span>📊</span><small>Успеваемость</small>
+        </button>
+        <button class="bnav-btn" data-page="schedule" onclick="navigate('schedule')">
+          <span>📅</span><small>Расписание</small>
+        </button>
+        <button class="bnav-btn" data-page="profile" onclick="navigate('profile')">
+          <span>👤</span><small>Профиль</small>
+        </button>
+      </nav>
+    </section>
+
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
